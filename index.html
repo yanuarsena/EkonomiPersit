@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- Apple PWA Standalone Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Ekonomi">
+  
+  <!-- Theme Color for Browser Header (Persit Pink) -->
+  <meta name="theme-color" content="#FF9EBB">
+  
+  <title>Ekonomi Persit - Keuangan Digital</title>
+  
+  <!-- Link manifest PWA -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- ZETTBOS FIX: Trik #.png ditambahkan agar iOS Apple merender ikon ini dari Google Drive -->
+  <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/12UKSxpUNM3_KYIYl-OavTcgJLQNQsfC6#.png">
+  <link rel="shortcut icon" href="https://lh3.googleusercontent.com/d/1A3AY55_AZPzjUkSlVHBkLb_DKZmnUQVS#.png" type="image/x-icon">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Sans Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    html, body {
+      background-color: #FFF5F7 !important; /* Soft Cream / Light Pink Background */
+      margin: 0 !important;
+      padding: 0 !important;
+      height: 100% !important;
+      width: 100% !important;
+      overflow: hidden !important;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* PWA Iframe Shell - Melar penuh 100% menutupi seluruh screen fisik HP */
+    .pwa-iframe-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+      border: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      z-index: 10;
+      -webkit-overflow-scrolling: touch;
+      overflow-y: auto;
+    }
+
+    /* Layar fallback cerdas saat koneksi internet terputus (Offline Screen) - Pink Gradient */
+    #offlineFallbackScreen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #FF9EBB 0%, #FFC0CB 100%);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      color: #1E293B; /* Slate 800 */
+    }
+
+    /* Layar Loading Indikator Premium & Setup Wizard - Light Cream/Pink */
+    #loadingScreen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #FFF5F7 0%, #FFE4E6 100%);
+      z-index: 99;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      color: #1E293B;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= LAYAR LOADING & SMART SETUP WIZARD ================= -->
+  <div id="loadingScreen">
+    <div class="space-y-6 w-full max-w-sm mx-auto flex flex-col items-center p-4">
+      
+      <!-- Logo Badge -->
+      <div class="w-20 h-20 flex items-center justify-center relative">
+        <div class="absolute inset-0 rounded-full bg-pink-400/20 filter blur-xl animate-pulse"></div>
+        <!-- ZETTBOS FIX: Append #.png di GDrive IMG Src -->
+        <img src="https://lh3.googleusercontent.com/d/1VNdfncOZ1uZ-O5nw5rAjwvVj3fFNhsel#.png" referrerpolicy="no-referrer" alt="Logo" class="w-16 h-16 relative z-10 object-contain bg-transparent">
+      </div>
+      
+      <!-- DEFAULT SPINNER VIEW -->
+      <div id="spinnerLoader" class="space-y-4 flex flex-col items-center">
+        <div class="space-y-1">
+          <h2 class="text-xs font-black text-pink-600 tracking-widest uppercase">EKONOMI PERSIT</h2>
+          <p class="text-[9px] text-pink-400 font-extrabold tracking-widest uppercase">Menghubungkan ke Server...</p>
+        </div>
+        <!-- Pink Loader -->
+        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500"></div>
+      </div>
+
+      <!-- SMART SETUP WIZARD PANEL (Otomatis muncul jika URL salah/kosong) -->
+      <div id="setupWizardPanel" class="hidden w-full bg-white/80 rounded-3xl border border-pink-100 p-5 text-center space-y-4 shadow-xl">
+        <div class="space-y-1 text-left">
+          <h3 class="text-sm font-extrabold text-pink-600 flex items-center gap-1.5"><i class="fa-solid fa-gears"></i> Setup Koneksi PWA</h3>
+          <p class="text-[10px] text-slate-600 leading-relaxed font-semibold">
+            Masukkan URL Web App Google Apps Script asli Anda yang berakhiran <strong class="text-pink-600">/exec</strong> untuk mengaktifkan sinkronisasi PWA.
+          </p>
+        </div>
+
+        <div class="space-y-2 text-left">
+          <label class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest pl-1">URL Web App Apps Script Anda</label>
+          <input type="text" id="setupInputUrl" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-white border border-pink-200 rounded-xl px-3 py-2.5 text-xs text-slate-800 placeholder-slate-300 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 shadow-inner">
+        </div>
+
+        <button onclick="saveAndConnectUrl()" class="w-full py-3 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-xl font-black text-xs tracking-wider uppercase transition active:scale-95 shadow-md shadow-pink-200">
+          <i class="fa-solid fa-circle-check mr-1.5"></i> Simpan & Hubungkan
+        </button>
+
+        <p class="text-[9px] text-slate-400 font-semibold leading-relaxed">
+          *Pilihan ini akan disimpan langsung di memori HP Anda. Anda dapat mengubahnya kapan saja melalui menu Profil.
+        </p>
+      </div>
+
+      <!-- SMART TIMEOUT HELPER -->
+      <div id="timeoutHelper" class="hidden opacity-0 scale-95 transition-all duration-500 mt-2 px-4 py-3.5 bg-white/80 rounded-2xl border border-pink-100 w-full text-center shadow-md">
+        <p class="text-[10px] text-slate-600 leading-relaxed font-semibold mb-3">
+          Jika layar tetap tertahan memuat, browser Anda mungkin memblokir sistem otorisasi login Google di dalam aplikasi.
+        </p>
+        <div class="flex gap-2">
+          <button onclick="openDirectly()" class="w-1/2 py-2 bg-pink-50 hover:bg-pink-100 text-pink-600 rounded-xl font-extrabold text-[10px] tracking-wide uppercase transition active:scale-95 border border-pink-200">
+            <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Jalur Cepat
+          </button>
+          <button onclick="resetSavedConnection()" class="w-1/2 py-2 bg-gradient-to-r from-pink-400 to-pink-500 text-white rounded-xl font-extrabold text-[10px] tracking-wide uppercase transition active:scale-95 shadow-md shadow-pink-200">
+            <i class="fa-solid fa-rotate-left mr-1"></i> Reset Setup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OFFLINE FALLBACK SCREEN -->
+  <div id="offlineFallbackScreen">
+    <div class="space-y-6 max-w-xs mx-auto">
+      <div class="w-24 h-24 bg-white/30 rounded-full flex items-center justify-center mx-auto border border-white/40 animate-pulse">
+        <i class="fa-solid fa-wifi-slash text-4xl text-white"></i>
+      </div>
+      
+      <div class="space-y-2">
+        <h1 class="text-xl font-extrabold tracking-tight text-white">Koneksi Terputus</h1>
+        <p class="text-xs text-pink-50 leading-relaxed font-semibold">
+          Aplikasi memerlukan koneksi internet aktif untuk menarik data keuangan Anda secara real-time dari server.
+        </p>
+      </div>
+
+      <button onclick="window.location.reload();" class="w-full py-3.5 bg-white text-pink-600 font-black text-xs uppercase tracking-wider rounded-full active:scale-95 transition duration-150 focus:outline-none shadow-lg shadow-pink-900/20">
+        <i class="fa-solid fa-rotate-right mr-1.5"></i> Coba Hubungkan Kembali
+      </button>
+    </div>
+  </div>
+
+  <!-- SEAMLESS NATIVE APPS SCRIPT IFRAME -->
+  <iframe id="pwaIframe" src="" class="pwa-iframe-container" allow="geolocation; microphone; camera"></iframe>
+
+  <script>
+    // ========================================================
+    // SINKRONISASI LINK BACKEND APPS SCRIPT (ZETTBOS CONFIG)
+    // ========================================================
+    
+    // GANTI TULISAN DI BAWAH INI DENGAN LINK WEB APP /EXEC SPREADSHEET ASLI MILIK ANDA!
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzQYyG5aGFFyUahNoHFG7TAnThRu2RpqU5YZ1yx87YjMLLXyaYd1HK7zVH86ViwFC_F/exec";
+
+    let finalActiveUrl = "";
+
+    // Membaca status koneksi yang tersimpan secara lokal
+    function initializeConnection() {
+      const localUrl = localStorage.getItem('panen_gas_url');
+      
+      if (localUrl && localUrl.startsWith('https://script.google.com/')) {
+        finalActiveUrl = localUrl;
+        return true;
+      }
+
+      if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
+        finalActiveUrl = GAS_WEB_APP_URL;
+        return true;
+      }
+
+      return false;
+    }
+
+    function saveAndConnectUrl() {
+      const inputVal = document.getElementById('setupInputUrl').value.trim();
+      if (!inputVal || !inputVal.startsWith('https://script.google.com/')) {
+        alert("Peringatan: Harap masukkan URL Web App Google Apps Script yang sah!");
+        return;
+      }
+
+      localStorage.setItem('panen_gas_url', inputVal);
+      window.location.reload();
+    }
+
+    function resetSavedConnection() {
+      localStorage.removeItem('panen_gas_url');
+      window.location.reload();
+    }
+
+    function openDirectly() {
+      if (finalActiveUrl) {
+        window.open(finalActiveUrl, '_blank');
+      }
+    }
+
+    window.addEventListener('load', () => {
+      const iframe = document.getElementById('pwaIframe');
+      const offlineScreen = document.getElementById('offlineFallbackScreen');
+      const loadingScreen = document.getElementById('loadingScreen');
+      const spinnerLoader = document.getElementById('spinnerLoader');
+      const setupWizardPanel = document.getElementById('setupWizardPanel');
+      const timeoutHelper = document.getElementById('timeoutHelper');
+
+      // 1. Jalankan proses bootstrap koneksi
+      const isConnectionConfigured = initializeConnection();
+
+      if (isConnectionConfigured) {
+        // Tembakkan URL Apps Script langsung ke dalam iframe shell
+        iframe.src = finalActiveUrl;
+        
+        // Hilangkan layar loading saat iframe sukses memuat konten Apps Script
+        iframe.addEventListener('load', () => {
+          loadingScreen.style.opacity = '0';
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+          }, 500);
+        });
+
+        // Aktifkan Helper Timeout jika dalam 7 detik iframe gagal memuat karena terblokir Google login
+        setTimeout(() => {
+          if (loadingScreen.style.display !== 'none') {
+            timeoutHelper.classList.remove('hidden', 'opacity-0', 'scale-95');
+            timeoutHelper.classList.add('opacity-100', 'scale-100');
+          }
+        }, 7000);
+
+      } else {
+        // Tampilkan wizard penyetelan jika URL tidak dikonfigurasi
+        spinnerLoader.classList.add('hidden');
+        setupWizardPanel.classList.remove('hidden');
+      }
+
+      // 2. Monitoring Status Keaktifan Koneksi Internet
+      function updateConnectionStatus() {
+        if (navigator.onLine) {
+          offlineScreen.style.display = 'none';
+          if (loadingScreen.style.display === 'none') {
+            iframe.style.display = 'block';
+          }
+        } else {
+          offlineScreen.style.display = 'flex';
+          iframe.style.display = 'none';
+        }
+      }
+
+      window.addEventListener('online', updateConnectionStatus);
+      window.addEventListener('offline', updateConnectionStatus);
+      updateConnectionStatus();
+    });
+
+    // Registrasi Service Worker PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Zettbos PWA Service Worker Registered!'))
+          .catch(err => console.log('PWA Service Worker Registration Failed: ', err));
+      });
+    }
+  </script>
+</body>
+</html>
