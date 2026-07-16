@@ -95,7 +95,6 @@
       <!-- Logo Badge -->
       <div class="w-20 h-20 flex items-center justify-center relative">
         <div class="absolute inset-0 rounded-full bg-pink-400/20 filter blur-xl animate-pulse"></div>
-        <!-- ZETTBOS FIX: Append #.png di GDrive IMG Src -->
         <img src="https://lh3.googleusercontent.com/d/1VNdfncOZ1uZ-O5nw5rAjwvVj3fFNhsel#.png" referrerpolicy="no-referrer" alt="Logo" class="w-16 h-16 relative z-10 object-contain bg-transparent">
       </div>
       
@@ -177,22 +176,22 @@
     // SINKRONISASI LINK BACKEND APPS SCRIPT (ZETTBOS CONFIG)
     // ========================================================
     
-    // GANTI TULISAN DI BAWAH INI DENGAN LINK WEB APP /EXEC SPREADSHEET ASLI MILIK ANDA!
+    // 🟢 ZETTBOS: Link Apps Script Anda telah disematkan secara permanen di sini.
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzQYyG5aGFFyUahNoHFG7TAnThRu2RpqU5YZ1yx87YjMLLXyaYd1HK7zVH86ViwFC_F/exec";
 
     let finalActiveUrl = "";
 
     // Membaca status koneksi yang tersimpan secara lokal
     function initializeConnection() {
-      const localUrl = localStorage.getItem('panen_gas_url');
-      
-      if (localUrl && localUrl.startsWith('https://script.google.com/')) {
-        finalActiveUrl = localUrl;
-        return true;
-      }
-
+      // Prioritaskan URL bawaan (Hardcoded) jika valid
       if (GAS_WEB_APP_URL && GAS_WEB_APP_URL.startsWith('https://script.google.com/')) {
         finalActiveUrl = GAS_WEB_APP_URL;
+        return true;
+      }
+      
+      const localUrl = localStorage.getItem('panen_gas_url');
+      if (localUrl && localUrl.startsWith('https://script.google.com/')) {
+        finalActiveUrl = localUrl;
         return true;
       }
 
