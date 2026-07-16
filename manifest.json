@@ -2,20 +2,20 @@
   "name": "Ekonomi Persit",
   "short_name": "Ekonomi Persit",
   "description": "Sistem Aplikasi Keuangan Digital Ekonomi Persit",
-  "start_url": "index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#FFF5F7",
   "theme_color": "#FF9EBB",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://lh3.googleusercontent.com/d/1GG3IHTp0-LrLOihJnMa8IaWYysYb7fcC#.png",
+      "src": "https://lh3.googleusercontent.com/d/12UKSxpUNM3_KYIYl-OavTcgJLQNQsfC6#.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://lh3.googleusercontent.com/d/1GG3IHTp0-LrLOihJnMa8IaWYysYb7fcC#.png",
+      "src": "https://lh3.googleusercontent.com/d/12UKSxpUNM3_KYIYl-OavTcgJLQNQsfC6#.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
