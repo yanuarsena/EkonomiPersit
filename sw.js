@@ -5,8 +5,8 @@
  * ========================================================
  */
 
-// 🟢 ZETTBOS FIX: Cache version dinaikkan ke v2.4 (Perbaikan Bug Cache Iframe Google)
-const CACHE_NAME = 'panen-pwa-cache-v2.4';
+// 🟢 ZETTBOS FIX: Cache version dinaikkan ke v2.5 (Force Reset Cache)
+const CACHE_NAME = 'panen-pwa-cache-v2.5';
 
 // 1. Zettbos Protocol: Hanya cache file inti lokal saat Install untuk menghindari Crash CORS
 const CORE_ASSETS = [
@@ -21,7 +21,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('[Zettbos SW] Pre-loading core local assets (New Theme)...');
+        console.log('[Zettbos SW] Pre-loading core local assets (Final Version)...');
         return cache.addAll(CORE_ASSETS);
       })
       .then(() => self.skipWaiting())
@@ -52,7 +52,6 @@ self.addEventListener('fetch', event => {
   const requestUrl = new URL(event.request.url);
 
   // 🟢 ZETTBOS CRITICAL FIX: Bypass Cache untuk Google Apps Script & Google User Content
-  // JANGAN PERNAH menyimpan iframe Apps Script ke dalam cache karena memiliki token sesi kedaluwarsa.
   if (requestUrl.hostname.includes('script.google.com') ||
       requestUrl.hostname.includes('script.googleusercontent.com') ||
       requestUrl.hostname.includes('googleusercontent.com') ||
@@ -63,19 +62,15 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
-        // Kembalikan dari cache jika ada
         if (cachedResponse) {
           return cachedResponse;
         }
 
-        // Jika tidak ada di cache, ambil dari network (Dynamic Caching)
         return fetch(event.request).then(networkResponse => {
-          // Validasi response: Pastikan response valid atau berupa "opaque" (untuk CORS block)
           if (!networkResponse || (networkResponse.status !== 200 && networkResponse.type !== 'opaque')) {
             return networkResponse;
           }
 
-          // Kloning response untuk disimpan ke cache (karena response stream hanya bisa dibaca 1x)
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseToCache);
@@ -84,7 +79,6 @@ self.addEventListener('fetch', event => {
           return networkResponse;
         }).catch(error => {
           console.warn('[Zettbos SW] Fetch failed, device might be offline.', error);
-          // Jika gagal mengambil dari network (offline), biarkan fallthrough ke halaman offline
         });
       })
   );
