@@ -5,8 +5,8 @@
  * ========================================================
  */
 
-// 🟢 ZETTBOS FIX: Cache version dinaikkan ke v2.3 agar browser otomatis memuat UI Tema Pink yang baru
-const CACHE_NAME = 'panen-pwa-cache-v2.3';
+// 🟢 ZETTBOS FIX: Cache version dinaikkan ke v2.4 (Perbaikan Bug Cache Iframe Google)
+const CACHE_NAME = 'panen-pwa-cache-v2.4';
 
 // 1. Zettbos Protocol: Hanya cache file inti lokal saat Install untuk menghindari Crash CORS
 const CORE_ASSETS = [
@@ -49,6 +49,17 @@ self.addEventListener('fetch', event => {
   // Hanya proses metode GET pada protokol HTTP/HTTPS
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) return;
 
+  const requestUrl = new URL(event.request.url);
+
+  // 🟢 ZETTBOS CRITICAL FIX: Bypass Cache untuk Google Apps Script & Google User Content
+  // JANGAN PERNAH menyimpan iframe Apps Script ke dalam cache karena memiliki token sesi kedaluwarsa.
+  if (requestUrl.hostname.includes('script.google.com') ||
+      requestUrl.hostname.includes('script.googleusercontent.com') ||
+      requestUrl.hostname.includes('googleusercontent.com') ||
+      requestUrl.hostname.includes('drive.google.com')) {
+      return; // Kembalikan kontrol langsung ke browser (Bypass Service Worker)
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
@@ -59,7 +70,7 @@ self.addEventListener('fetch', event => {
 
         // Jika tidak ada di cache, ambil dari network (Dynamic Caching)
         return fetch(event.request).then(networkResponse => {
-          // Validasi response: Pastikan response valid atau berupa "opaque" (untuk CORS block seperti G-Drive)
+          // Validasi response: Pastikan response valid atau berupa "opaque" (untuk CORS block)
           if (!networkResponse || (networkResponse.status !== 200 && networkResponse.type !== 'opaque')) {
             return networkResponse;
           }
@@ -73,7 +84,7 @@ self.addEventListener('fetch', event => {
           return networkResponse;
         }).catch(error => {
           console.warn('[Zettbos SW] Fetch failed, device might be offline.', error);
-          // Jika gagal mengambil dari network (offline), dan file tidak ada di cache, biarkan fallthrough
+          // Jika gagal mengambil dari network (offline), biarkan fallthrough ke halaman offline
         });
       })
   );
